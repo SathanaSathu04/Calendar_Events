@@ -22,9 +22,7 @@ To get started with the calendar application, follow these steps:
 
 ### Installation
 
-    -install ES6 for react packages.
-    -npm create vite@latest.
-    -give the project name(calendar)
-    -cd calendar
     -npm install
+**To Run**
+    -Right Click index.html select Open Integrated terminal 
     -npm run dev
