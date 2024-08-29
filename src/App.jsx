@@ -1,188 +1,186 @@
-
 import React, { useState } from 'react';
-import './index.css';
+import './index.css'; // Importing the CSS for styling
 
-const Calendar = () => {
+const App = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState({});
+  const [showEventForm, setShowEventForm] = useState(false);
   const [showEventDetails, setShowEventDetails] = useState(false);
-  const [showFilteredEvents, setShowFilteredEvents] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [eventDescription, setEventDescription] = useState('');
+  const [eventCategory, setEventCategory] = useState('Work');
+  const [editIndex, setEditIndex] = useState(null);
   const [filter, setFilter] = useState('All');
 
-  const getFirstDayOfMonth = () => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    return date.getDay();
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
   };
 
-  const getDaysInMonth = () => {
-    return new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
 
-  const generateCalendarDays = () => {
-    const firstDay = getFirstDayOfMonth();
-    const daysInMonth = getDaysInMonth();
-    const days = [];
-
-    for (let i = 0; i < firstDay; i++) {
-      days.push(null);
-    }
-
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(i);
-    }
-
-    return days;
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month + 1, 0).getDate();
   };
 
-  const handleAddEvent = (day) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toISOString().split('T')[0];
-    const event = prompt("Enter event details:");
-    const category = prompt("Enter event category (Work/Personal):");
-    if (event && (category === 'Work' || category === 'Personal')) {
-      setEvents(prevEvents => ({
-        ...prevEvents,
-        [date]: [...(prevEvents[date] || []), { event, category }]
-      }));
-    } else {
-      alert("Invalid category. Please enter 'Work' or 'Personal'.");
-    }
+  const getFirstDayOfMonth = (year, month) => {
+    return new Date(year, month, 1).getDay();
   };
 
-  const handleDeleteEvent = (date, index) => {
-    setEvents(prevEvents => {
-      const updatedEvents = [...(prevEvents[date] || [])];
-      updatedEvents.splice(index, 1);
-      if (updatedEvents.length === 0) {
-        const { [date]: _, ...rest } = prevEvents; // Remove empty dates
-        return rest;
+  const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
+  const firstDay = getFirstDayOfMonth(currentDate.getFullYear(), currentDate.getMonth());
+
+  const handleDayClick = (day) => {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+    setSelectedDate(date);
+    setShowEventForm(true);
+  };
+
+  const handleAddEvent = () => {
+    if (eventDescription.trim()) {
+      const updatedEvents = { ...events };
+      if (editIndex !== null) {
+        updatedEvents[selectedDate][editIndex] = { description: eventDescription, category: eventCategory };
+      } else {
+        updatedEvents[selectedDate] = [
+          ...(updatedEvents[selectedDate] || []),
+          { description: eventDescription, category: eventCategory },
+        ];
       }
-      return { ...prevEvents, [date]: updatedEvents };
-    });
-  };
-
-  const handleEditEvent = (date, index) => {
-    const updatedEvent = prompt("Edit event details:", events[date][index].event);
-    const updatedCategory = prompt("Edit event category (Work/Personal):", events[date][index].category);
-    if (updatedEvent && (updatedCategory === 'Work' || updatedCategory === 'Personal')) {
-      setEvents(prevEvents => ({
-        ...prevEvents,
-        [date]: prevEvents[date].map((event, i) => i === index ? { event: updatedEvent, category: updatedCategory } : event)
-      }));
-    } else {
-      alert("Invalid category. Please enter 'Work' or 'Personal'.");
+      setEvents(updatedEvents);
+      setShowEventForm(false);
+      setEventDescription('');
+      setEventCategory('Work');
+      setEditIndex(null);
     }
   };
 
-  const days = generateCalendarDays();
-
-  const toggleEventDetails = () => {
-    setShowEventDetails(!showEventDetails);
+  const handleEditEvent = (index) => {
+    setEventDescription(events[selectedDate][index].description);
+    setEventCategory(events[selectedDate][index].category);
+    setEditIndex(index);
+    setShowEventForm(true);
   };
 
-  const toggleFilterEvents = () => {
-    setShowFilteredEvents(!showFilteredEvents);
-  };
-
-  const handleFilterChange = (newFilter) => {
-    setFilter(newFilter);
-  };
-
-  const filteredEvents = Object.entries(events).reduce((acc, [date, eventsOnDate]) => {
-    if (filter === 'All') {
-      acc[date] = eventsOnDate;
-    } else {
-      acc[date] = eventsOnDate.filter(event => event.category === filter);
+  const handleDeleteEvent = (index) => {
+    const updatedEvents = { ...events };
+    updatedEvents[selectedDate] = updatedEvents[selectedDate].filter((_, i) => i !== index);
+    if (updatedEvents[selectedDate].length === 0) {
+      delete updatedEvents[selectedDate];
     }
-    return acc;
-  }, {});
+    setEvents(updatedEvents);
+    setShowEventDetails(true);
+  };
+
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
+  };
+
+  const filteredEvents = Object.keys(events).flatMap(date => 
+    events[date].filter(event => filter === 'All' || event.category === filter).map(event => ({ ...event, date }))
+  );
+
+  const days = [];
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Add day names
+  dayNames.forEach((name, index) => {
+    days.push(<div key={`day-name-${index}`} className="calendar-day-name">{name}</div>);
+  });
+
+  for (let i = 0; i < firstDay; i++) {
+    days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    days.push(
+      <div
+        key={day}
+        className="calendar-day"
+        onClick={() => handleDayClick(day)}
+      >
+        {day}
+        {events[new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString()] && (
+          <span className="event-indicator"></span>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className="calendar-container">
-      <div className="calendar">
-        <div className="calendar-header">
-          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}>
-            &lt;
-          </button>
-          <span>{currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
-          <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}>
-            &gt;
-          </button>
-        </div>
-        <div className="calendar-grid">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div className="calendar-cell" key={day}>{day}</div>
-          ))}
-          {days.map((day, index) => (
-            <div
-              className="calendar-cell"
-              key={index}
-              onClick={() => day && handleAddEvent(day)}
-            >
-              {day}
-              {day && events[new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toISOString().split('T')[0]] && (
-                <div>
-                  {events[new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toISOString().split('T')[0]].map((event, i) => (
-                    <div key={i}>
-                      <span>{event.event} ({event.category})</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+    <div className="calendar">
+      <div className="calendar-header">
+        <button onClick={handlePrevMonth}>Prev</button>
+        <h2>{currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
+        <button onClick={handleNextMonth}>Next</button>
       </div>
-      <div className="buttons">
-        <button className="view-events-btn" onClick={toggleEventDetails}>
-          {showEventDetails ? 'Hide Event Details' : 'Show Event Details'}
-        </button>
-        <button className="filter-events-btn" onClick={toggleFilterEvents}>
-          {showFilteredEvents ? 'Hide Filter Options' : 'Show Filter Options'}
-        </button>
+      <div className="calendar-days-of-week">
+        {days.slice(0, 7)} {/* Only display the day names */}
       </div>
-      <div className={`events-list ${showEventDetails ? 'show' : ''}`}>
-        <h3>Event Details for {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
-        {Object.entries(events).map(([date, eventsOnDate]) => (
-          <div key={date}>
-            <h4>{new Date(date).toLocaleDateString()}</h4>
-            <ul>
-              {eventsOnDate.map((event, index) => (
+      <div className="calendar-grid">
+        {days.slice(7)} {/* Skip the day names and display the days of the month */}
+      </div>
+      {showEventForm && (
+        <div className="event-form">
+          <h3>{editIndex !== null ? 'Edit Event' : 'Add Event'}</h3>
+          <input
+            type="text"
+            value={eventDescription}
+            onChange={(e) => setEventDescription(e.target.value)}
+            placeholder="Event Description"
+          />
+          <select value={eventCategory} onChange={(e) => setEventCategory(e.target.value)}>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+          </select>
+          <button onClick={handleAddEvent}>{editIndex !== null ? 'Update Event' : 'Add Event'}</button>
+          <button onClick={() => setShowEventForm(false)}>Cancel</button>
+        </div>
+      )}
+      <div className="calendar-buttons">
+        <button className="event-details" onClick={() => setShowEventDetails(true)}>Event Details</button>
+        <button className="filter-events" onClick={() => setShowFilter(!showFilter)}>Filter Events</button>
+      </div>
+      {showEventDetails && (
+        <div className="event-list">
+          <h3>All Events</h3>
+          {showFilter && (
+            <select value={filter} onChange={handleFilterChange}>
+              <option value="All">All</option>
+              <option value="Work">Work</option>
+              <option value="Personal">Personal</option>
+            </select>
+          )}
+          <ul>
+            {filteredEvents.length === 0 ? (
+              <div className="no-events-message">No events added to the calendar.</div>
+            ) : (
+              filteredEvents.map((event, index) => (
                 <li key={index}>
-                  {event.event} ({event.category})
-                  <button className="edit-btn" onClick={() => handleEditEvent(date, index)}>Edit</button>
-                  <button className="delete-btn" onClick={() => handleDeleteEvent(date, index)}>Delete</button>
+                  {event.date}: {event.description} ({event.category})
+                  <button className="edit-event" onClick={() => handleEditEvent(index)}>Edit</button>
+                  <button className="delete-event" onClick={() => handleDeleteEvent(index)}>Delete</button>
                 </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-        {Object.keys(events).length === 0 && <p>No events for this month.</p>}
-      </div>
-      <div className={`filter-options ${showFilteredEvents ? 'show' : ''}`}>
-        <button onClick={() => handleFilterChange('All')}>All</button>
-        <button onClick={() => handleFilterChange('Work')}>Work</button>
-        <button onClick={() => handleFilterChange('Personal')}>Personal</button>
-        <div className="filtered-events-list">
-          <h3>Filtered Events for {currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h3>
-          {Object.entries(filteredEvents).map(([date, eventsOnDate]) => (
-            <div key={date}>
-              <h4>{new Date(date).toLocaleDateString()}</h4>
-              <ul>
-                {eventsOnDate.map((event, index) => (
-                  <li key={index}>
-                    {event.event} ({event.category})
-                    <button className="edit-btn" onClick={() => handleEditEvent(date, index)}>Edit</button>
-                    <button className="delete-btn" onClick={() => handleDeleteEvent(date, index)}>Delete</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          {Object.keys(filteredEvents).length === 0 && <p>No events for this month with selected filter.</p>}
+              ))
+            )}
+          </ul>
         </div>
-      </div>
+      )}
     </div>
   );
 };
 
-export default Calendar;
+export default App;
+
+
+
+    
+     
+ 
+        
+             
+          
+        
+            
