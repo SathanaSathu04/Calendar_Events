@@ -1,119 +1,171 @@
 import React, { useState } from 'react';
-import Calendar from 'react-calendar';
-import './index.css'; // Import the default styles
+import './index.css'; // Importing the CSS for styling
 
 const App = () => {
-  const [date, setDate] = useState(new Date());
-  const [events, setEvents] = useState({}); // Store events in an object with date keys
-  const [selectedEvent, setSelectedEvent] = useState(null);
-  const [categoryFilter, setCategoryFilter] = useState('');
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [events, setEvents] = useState({});
+  const [showEventForm, setShowEventForm] = useState(false);
+  const [showEventDetails, setShowEventDetails] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [eventDescription, setEventDescription] = useState('');
+  const [eventCategory, setEventCategory] = useState('Work');
+  const [editIndex, setEditIndex] = useState(null);
+  const [filter, setFilter] = useState('All');
 
-  // Handle date change on the calendar
-  const onChange = (newDate) => {
-    setDate(newDate);
-    setSelectedEvent(null); // Reset the selected event when a new date is chosen
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
   };
 
-  // Add a new event
-  const addEvent = () => {
-    const title = prompt('Enter event title:');
-    const category = prompt('Enter event category (Work/Personal):');
-    const description = prompt('Enter event description:');
-    const formattedDate = date.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+  };
 
-    if (title && category) {
-      const newEvent = { title, category, description };
-      setEvents({
-        ...events,
-        [formattedDate]: [...(events[formattedDate] || []), newEvent],
-      });
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (year, month) => {
+    return new Date(year, month, 1).getDay();
+  };
+
+  const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
+  const firstDay = getFirstDayOfMonth(currentDate.getFullYear(), currentDate.getMonth());
+
+  const handleDayClick = (day) => {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+    setSelectedDate(date);
+    setShowEventForm(true);
+  };
+
+  const handleAddEvent = () => {
+    if (eventDescription.trim()) {
+      const updatedEvents = { ...events };
+      if (editIndex !== null) {
+        updatedEvents[selectedDate][editIndex] = { description: eventDescription, category: eventCategory };
+      } else {
+        updatedEvents[selectedDate] = [
+          ...(updatedEvents[selectedDate] || []),
+          { description: eventDescription, category: eventCategory },
+        ];
+      }
+      setEvents(updatedEvents);
+      setShowEventForm(false);
+      setEventDescription('');
+      setEventCategory('Work');
+      setEditIndex(null);
     }
   };
 
-  // Edit an event
-  const editEvent = (eventIndex) => {
-    const formattedDate = date.toISOString().split('T')[0];
-    const eventToEdit = events[formattedDate][eventIndex];
-
-    const newTitle = prompt('Edit event title:', eventToEdit.title);
-    const newCategory = prompt('Edit event category (Work/Personal):', eventToEdit.category);
-    const newDescription = prompt('Edit event description:', eventToEdit.description);
-
-    const updatedEvent = {
-      title: newTitle || eventToEdit.title,
-      category: newCategory || eventToEdit.category,
-      description: newDescription || eventToEdit.description,
-    };
-
-    const updatedEvents = events[formattedDate].map((event, index) =>
-      index === eventIndex ? updatedEvent : event
-    );
-
-    setEvents({ ...events, [formattedDate]: updatedEvents });
+  const handleEditEvent = (index) => {
+    setEventDescription(events[selectedDate][index].description);
+    setEventCategory(events[selectedDate][index].category);
+    setEditIndex(index);
+    setShowEventForm(true);
   };
 
-  // Delete an event
-  const deleteEvent = (eventIndex) => {
-    const formattedDate = date.toISOString().split('T')[0];
-    const updatedEvents = events[formattedDate].filter((_, index) => index !== eventIndex);
-
-    setEvents({ ...events, [formattedDate]: updatedEvents });
+  const handleDeleteEvent = (index) => {
+    const updatedEvents = { ...events };
+    updatedEvents[selectedDate] = updatedEvents[selectedDate].filter((_, i) => i !== index);
+    if (updatedEvents[selectedDate].length === 0) {
+      delete updatedEvents[selectedDate];
+    }
+    setEvents(updatedEvents);
+    setShowEventDetails(true);
   };
 
-  // View event details
-  const viewEventDetails = (eventIndex) => {
-    const formattedDate = date.toISOString().split('T')[0];
-    setSelectedEvent(events[formattedDate][eventIndex]);
+  const handleFilterChange = (e) => {
+    setFilter(e.target.value);
   };
 
-  // Filter events by category
-  const filteredEvents = (events[date.toISOString().split('T')[0]] || []).filter(
-    (event) => !categoryFilter || event.category.toLowerCase() === categoryFilter.toLowerCase()
+  const filteredEvents = Object.keys(events).flatMap(date => 
+    events[date].filter(event => filter === 'All' || event.category === filter).map(event => ({ ...event, date }))
   );
 
+  const days = [];
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  // Add day names
+  dayNames.forEach((name, index) => {
+    days.push(<div key={`day-name-${index}`} className="calendar-day-name">{name}</div>);
+  });
+
+  for (let i = 0; i < firstDay; i++) {
+    days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    days.push(
+      <div
+        key={day}
+        className="calendar-day"
+        onClick={() => handleDayClick(day)}
+      >
+        {day}
+        {events[new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString()] && (
+          <span className="event-indicator"></span>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div style={{ textAlign: 'center', padding: '20px' }}>
-      <h1>React Calendar with Events</h1>
-      <Calendar onChange={onChange} value={date} />
-      <p>
-        <strong>Selected Date:</strong> {date.toDateString()}
-      </p>
-
-      <div>
-        <button onClick={addEvent}>Add Event</button>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          style={{ marginLeft: '10px' }}
-        >
-          <option value="">All Categories</option>
-          <option value="Work">Work</option>
-          <option value="Personal">Personal</option>
-        </select>
+    <div className="calendar">
+      <div className="calendar-header">
+        <button onClick={handlePrevMonth}>Prev</button>
+        <h2>{currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
+        <button onClick={handleNextMonth}>Next</button>
       </div>
-
-      <div>
-        <h2>Events on {date.toDateString()}:</h2>
-        <ul>
-          {filteredEvents.map((event, index) => (
-            <li key={index}>
-              <strong>{event.title}</strong> ({event.category})
-              <br />
-              <button onClick={() => viewEventDetails(index)}>View Details</button>
-              <button onClick={() => editEvent(index)} style={{ marginLeft: '5px' }}>Edit</button>
-              <button onClick={() => deleteEvent(index)} style={{ marginLeft: '5px' }}>Delete</button>
-            </li>
-          ))}
-        </ul>
+      <div className="calendar-days-of-week">
+        {days.slice(0, 7)} {/* Only display the day names */}
       </div>
-
-      {selectedEvent && (
-        <div>
-          <h3>Event Details</h3>
-          <p><strong>Title:</strong> {selectedEvent.title}</p>
-          <p><strong>Category:</strong> {selectedEvent.category}</p>
-          <p><strong>Description:</strong> {selectedEvent.description}</p>
-          <button onClick={() => setSelectedEvent(null)}>Close Details</button>
+      <div className="calendar-grid">
+        {days.slice(7)} {/* Skip the day names and display the days of the month */}
+      </div>
+      {showEventForm && (
+        <div className="event-form">
+          <h3>{editIndex !== null ? 'Edit Event' : 'Add Event'}</h3>
+          <input
+            type="text"
+            value={eventDescription}
+            onChange={(e) => setEventDescription(e.target.value)}
+            placeholder="Event Description"
+          />
+          <select value={eventCategory} onChange={(e) => setEventCategory(e.target.value)}>
+            <option value="Work">Work</option>
+            <option value="Personal">Personal</option>
+          </select>
+          <button onClick={handleAddEvent}>{editIndex !== null ? 'Update Event' : 'Add Event'}</button>
+          <button onClick={() => setShowEventForm(false)}>Cancel</button>
+        </div>
+      )}
+      <div className="calendar-buttons">
+        <button className="event-details" onClick={() => setShowEventDetails(true)}>Event Details</button>
+        <button className="filter-events" onClick={() => setShowFilter(!showFilter)}>Filter Events</button>
+      </div>
+      {showEventDetails && (
+        <div className="event-list">
+          <h3>All Events</h3>
+          {showFilter && (
+            <select value={filter} onChange={handleFilterChange}>
+              <option value="All">All</option>
+              <option value="Work">Work</option>
+              <option value="Personal">Personal</option>
+            </select>
+          )}
+          <ul>
+            {filteredEvents.length === 0 ? (
+              <div className="no-events-message">No events added to the calendar.</div>
+            ) : (
+              filteredEvents.map((event, index) => (
+                <li key={index}>
+                  {event.date}: {event.description} ({event.category})
+                  <button className="edit-event" onClick={() => handleEditEvent(index)}>Edit</button>
+                  <button className="delete-event" onClick={() => handleDeleteEvent(index)}>Delete</button>
+                </li>
+              ))
+            )}
+          </ul>
         </div>
       )}
     </div>
