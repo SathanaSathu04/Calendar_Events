@@ -1,218 +1,247 @@
-.calendar {
-  max-width: 600px;
-  margin: 20px auto;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #e3f2fd; /* Light Blue background */
-}
-
-/* Header styling */
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  background: #039be5; /* Blue background */
-  color: #fff;
-  border-bottom: 2px solid #0288d1; /* Darker Blue */
-}
-
-/* Days of the week (single row) */
-.calendar-days-of-week {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr); /* Single row */
-  background: #039be5; /* Blue background for days of the week */
-  color: #fff;
-  font-weight: bold;
-}
-
-/* Styling for day names */
-.calendar-day-name {
-  text-align: center;
-  padding: 10px;
-  border: 1px solid #ddd;
-}
-
-/* Calendar grid */
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background: #039be5; /* Blue background */
-}
-
-/* Day styling */
-.calendar-day {
-  text-align: center;
-  padding: 15px;
-  border: 1px solid #ddd;
-  background: #fff;
-  cursor: pointer;
-  position: relative;
+/* Global Styles */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f9fafb;
   color: #333;
-}
-
-/* Empty days for days before the 1st of the month */
-.calendar-day.empty {
-  background: #f1f1f1;
-}
-
-/* Styling for different days */
-.calendar-day:nth-child(7n + 1) {
-  color: #d32f2f; /* Dark Red for Sundays */
-}
-
-.calendar-day:nth-child(7n + 6) {
-  color: #388e3c; /* Dark Green for Saturdays */
-}
-
-/* Hover effect for days */
-.calendar-day:hover {
-  background: #bbdefb; /* Light Blue background on hover */
-}
-
-/* Event indicator */
-.event-indicator {
-  width: 8px;
-  height: 8px;
-  background: #0288d1; /* Dark Blue color for event indicators */
-  border-radius: 50%;
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-}
-
-/* Button styling */
-.calendar-buttons {
-  display: flex;
-  justify-content: center;
-  margin: 15px 0;
-}
-
-.calendar-buttons button {
-  margin: 0 5px;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 5px;
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.calendar-buttons .event-details {
-  background: #0288d1; /* Dark Blue background for Event Details button */
-}
-
-.calendar-buttons .event-details:hover {
-  background: #01579b; /* Darker Blue on hover */
-}
-
-.calendar-buttons .filter-events {
-  background: #4fc3f7; /* Light Blue background for Filter Events button */
-}
-
-.calendar-buttons .filter-events:hover {
-  background: #29b6f6; /* Darker Light Blue on hover */
-}
-
-/* Event form styling */
-.event-form {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: #fff;
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.event-form h3 {
-  margin: 0 0 10px;
-  color: #039be5; /* Blue color */
-}
-
-.event-form input, .event-form select {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-}
-
-.event-form button {
-  margin-right: 10px;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 5px;
-  background: #4caf50; /* Green background */
-  color: #fff;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-
-.event-form button:hover {
-  background: #388e3c; /* Darker Green */
-}
-
-/* Event list styling */
-.event-list {
-  margin-top: 20px;
-  padding: 15px;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-
-.event-list h3 {
-  margin-top: 0;
-  color: #039be5; /* Blue color */
-}
-
-.event-list select {
-  margin-bottom: 15px;
-}
-
-.event-list ul {
-  list-style-type: none;
+  margin: 0;
   padding: 0;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.event-list li {
+/* App Container */
+.calendar-app {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* Header */
+h1 {
+  font-size: 2.3em;
+  color: #1e3a8a;
+  text-align: center;
+  margin-bottom: 25px;
+  font-weight: 600;
+}
+
+/* Calendar Styling */
+.react-calendar {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto 20px;
+  background-color: #f4f7fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.react-calendar__navigation {
+  background-color: #1e3a8a;
+  color: #ffffff;
+  border-radius: 12px 12px 0 0;
+}
+
+.react-calendar__navigation button {
+  color: inherit;
+  background: none;
+  border: none;
+  font-size: 1.1em;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.react-calendar__navigation button:hover {
+  background-color: #2d4fba;
+}
+
+.react-calendar_month-viewdays_day--weekend {
+  color: #e74c3c;
+}
+
+.react-calendar__tile {
+  padding: 15px 7px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  border-radius: 8px;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: #1e3a8a;
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.react-calendar__tile--active {
+  background-color: #3b82f6 !important;
+  color: white;
+  transform: scale(1.08);
+  font-weight: bold;
+  border-radius: 10px;
+}
+
+/* Event Section */
+.events {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.events h2 {
+  font-size: 1.8em;
+  color: #1e3a8a;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.events ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.events li {
+  background-color: #f1f5f9;
+  margin-bottom: 15px;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #ddd;
 }
 
-.event-list li:last-child {
-  border-bottom: none;
+.events li strong {
+  display: block;
+  font-size: 1.3em;
+  color: #1e293b;
 }
 
-.event-list .edit-event {
-  background: #4caf50; /* Green color for edit button */
-  color: #fff;
+.events li p {
+  margin: 5px 0;
+  font-size: 1em;
+  color: #64748b;
 }
 
-.event-list .edit-event:hover {
-  background: #388e3c; /* Darker Green */
+.events li button {
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin-left: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.event-list .delete-event {
-  background: #f44336; /* Red color for delete button */
-  color: #fff;
+.events li button:hover {
+  background-color: #3b82f6;
+  transform: scale(1.05);
 }
 
-.event-list .delete-event:hover {
-  background: #c62828; /* Darker Red */
-}
-
-.no-events-message {
-  text-align: center;
-  color: #d32f2f; /* Dark Red */
-  font-weight: bold;
+.event-details {
   margin-top: 20px;
+  padding: 20px;
+  background-color: #e0f2fe;
+  border-left: 5px solid #3b82f6;
+  border-radius: 8px;
+}
+
+.event-details h3 {
+  font-size: 1.5em;
+  color: #1e3a8a;
+}
+
+.event-details p {
+  margin: 10px 0;
+  font-size: 1em;
+  color: #64748b;
+}
+
+/* Buttons */
+button {
+  background-color: #1e3a8a;
+  color: black;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-top: 10px;
+  font-size: 1em;
+}
+
+button:hover {
+  background-color: #3b82f6;
+  transform: scale(1.05);
+}
+
+/* Filter Section */
+.filters {
+  margin-top: 20px;
+  text-align: left;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.filters select {
+  padding: 10px 15px;
+  font-size: 1em;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-left: 10px;
+  background-color: #ffffff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filters select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .calendar-app {
+    padding: 20px;
+  }
+
+  .react-calendar {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto 15px;
+  }
+
+  .events li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .events li button {
+    margin-top: 10px;
+    margin-left: 0;
+  }
+
+  .filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filters select {
+    margin: 10px 0;
+    width: 100%;
+  }
 }
